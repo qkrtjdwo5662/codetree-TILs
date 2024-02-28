@@ -14,7 +14,8 @@ public class Main {
     static int[] rx = {1, -1, 0, 0};
     static int groupCount;
     static boolean[] used;
-
+    static ArrayList<int[]>[] groupList;
+    
     static int answer;
     public static void main(String[] args) throws IOException {
 
@@ -65,6 +66,32 @@ public class Main {
         }
         answer = 0;
         used = new boolean[groupCount];
+        groupList = new ArrayList[groupCount];
+        for (int i = 0; i < groupCount; i++) {
+			groupList[i] = new ArrayList<>();
+		}
+        setGroupList();
+        pickGroup(0, 0);
+        
+        rotateFirst();
+        rotateSecond();
+        groupBoard = new int[n][n];
+        groupCount = 0;
+        visited = new boolean[n][n];
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if(!visited[i][j]){
+                    divideGroup(new int[]{i, j}, board[i][j]);
+                    groupCount ++;
+                }
+            }
+        }
+        used = new boolean[groupCount];
+        groupList = new ArrayList[groupCount];
+        for (int i = 0; i < groupCount; i++) {
+			groupList[i] = new ArrayList<>();
+		}
+        setGroupList();
         pickGroup(0, 0);
 
         rotateFirst();
@@ -81,22 +108,11 @@ public class Main {
             }
         }
         used = new boolean[groupCount];
-        pickGroup(0, 0);
-
-        rotateFirst();
-        rotateSecond();
-        groupBoard = new int[n][n];
-        groupCount = 0;
-        visited = new boolean[n][n];
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                if(!visited[i][j]){
-                    divideGroup(new int[]{i, j}, board[i][j]);
-                    groupCount ++;
-                }
-            }
-        }
-        used = new boolean[groupCount];
+        groupList = new ArrayList[groupCount];
+        for (int i = 0; i < groupCount; i++) {
+			groupList[i] = new ArrayList<>();
+		}
+        setGroupList();
         pickGroup(0, 0);
 
 
@@ -114,21 +130,25 @@ public class Main {
             }
         }
         used = new boolean[groupCount];
+        groupList = new ArrayList[groupCount];
+        for (int i = 0; i < groupCount; i++) {
+			groupList[i] = new ArrayList<>();
+		}
+        setGroupList();
         pickGroup(0, 0);
 
         System.out.println(answer);
 
     }
-
-    static void print(){
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                System.out.print(board[i][j] + " ");
-            }
-            System.out.println();
-        }
+    static void setGroupList(){
+    	for (int i = 0; i < n; i++) {
+			for (int j = 0; j < n; j++) {
+				int num = groupBoard[i][j];
+				groupList[num].add(new int[] {i, j});
+			}
+		}
     }
-
+    
     static void divideGroup(int[] start, int num){
         ArrayDeque<int[]> deque = new ArrayDeque<>();
         visited[start[0]][start[1]] = true;
@@ -137,7 +157,7 @@ public class Main {
 
         while(!deque.isEmpty()){
             int[] now = deque.pollFirst();
-
+            
             for (int i = 0; i < 4; i++) {
                 int r = now[0] + ry[i];
                 int c = now[1] + rx[i];
@@ -189,37 +209,21 @@ public class Main {
 
     static int harmony(int a, int b){
         // 그룹 별 조화로움 구하기
-        ArrayList<int[]> groupA = new ArrayList<>();
-        ArrayList<int[]> groupB = new ArrayList<>();
-        int numA = 0;
-        int numB = 0;
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                if(groupBoard[i][j] == a){
-                    groupA.add(new int[]{i, j});
-                }
 
-                if(groupBoard[i][j] == b){
-                    groupB.add(new int[]{i, j});
-                }
-
-
-            }
-        }
-
-        int aSize = groupA.size();
-        int bSize = groupB.size();
+        int aSize = groupList[a].size();
+        int bSize = groupList[b].size();
 
         int count = 0;
 
         // 그룹에 포함된 개수가 작은 것의 맞닿는 변을 찾는다.
         if(aSize > bSize){
-            count = touchSide(groupB, a);
+            count = touchSide(groupList[b], a);
         }else{
-            count = touchSide(groupA, b);
+            count = touchSide(groupList[a], b);
         }
-        numA = board[groupA.get(0)[0]][groupA.get(0)[1]];
-        numB = board[groupB.get(0)[0]][groupB.get(0)[1]];
+        
+        int numA = board[groupList[a].get(0)[0]][groupList[a].get(0)[1]];
+        int numB = board[groupList[b].get(0)[0]][groupList[b].get(0)[1]];
 
         return (aSize + bSize) * numA * numB * count;
     }
